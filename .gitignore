@@ -1,3 +1,5 @@
 account.yaml
 favtags.yaml
+mongoid.yaml
 *.log
+*.swp

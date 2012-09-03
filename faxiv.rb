@@ -1,7 +1,9 @@
+require_relative 'util'
+require_relative 'task'
+
 require 'rubygems'
 require 'eventmachine'
 require 'em-http'
-require 'util'
 
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
@@ -16,7 +18,6 @@ class Faxiv
     cookie = getCookie(@proxies)
     p cookie
     @head = getRequestHeader(cookie)
-    @mysql = getMysql
   end
 
   def run()
@@ -45,10 +46,9 @@ class Faxiv
     fetchBookmarkNewIllust(p, ttl, proxy) do |ids|
       p ids.size
       p ids
-      stmt = @mysql.prepare("INSERT INTO `task` (`illust_id`,`created_timestamp`,`tag_prefix`, `bookmark_threshold`) values (?,NULL,'faxiv',8)")
       ids.each do |id|
         begin
-          stmt.execute(id.to_i)
+          Task.new(:illust_id => id.to_i, :tag_prefix => 'faxiv', :bookmark_threshold => 8).save
         rescue Exception => e
           p e
         end

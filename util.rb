@@ -1,15 +1,16 @@
 #-*- encoding: utf-8 -*-
 
-require 'rubygems'
-require 'mysql'
-require 'mechanize'
 require 'net/http'
+require 'yaml'
+
+require 'rubygems'
+require 'mechanize'
+require 'mongo'
+require 'mongoid'
+
+Mongoid.load!('mongoid.yaml')
 
 module Util
-  def getMysql()
-    Mysql::new('localhost', 'username', 'password', 'pixiv_crawler')
-  end
-
   def getProxies()
     proxies = []
     agent = Mechanize.new
@@ -25,6 +26,7 @@ module Util
   end
 
   def getCookie(proxies)
+    account = YAML.load_file('account.yaml')
     cookie = {}
     while cookie == {}
       begin
@@ -35,7 +37,7 @@ module Util
         http.read_timeout = 8
         http.start do |http|
           req = Net::HTTP::Post.new('/login.php')
-          req.set_form_data({'pixiv_id' => PIXIV_ID, 'pass' => PASS, 'mode' => 'login'})
+          req.set_form_data({'pixiv_id' => account['id'], 'pass' => account['pass'], 'mode' => 'login'})
           res = http.request(req)
           res.get_fields('Set-Cookie').each do |str|
             k, v = str[0 ... str.index(';')].split('=')
@@ -43,7 +45,7 @@ module Util
           end
         end
       rescue Exception => e
-        p e
+        puts e.message
         next
       end
     end
@@ -89,7 +91,7 @@ module Util
           end
         end
       rescue Exception => e
-        p e
+        puts e.message
         next
       end
     end
