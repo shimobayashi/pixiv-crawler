@@ -67,13 +67,13 @@ module Util
 
   def getBookmarkedUsers(proxies, head)
     reachedFinish = false
+    bookmarked_users = []
+    p = 1
     while !reachedFinish
       begin
-        bookmarked_users = []
         proxy = proxies.slice(rand(proxies.size), 1)[0]
         p proxy
 
-        p = 1
         while !reachedFinish
           http = Net::HTTP::Proxy(*proxy).new('www.pixiv.net', 80)
           http.open_timeout = 2
@@ -95,6 +95,7 @@ module Util
         next
       end
     end
+    bookmarked_users.uniq!
     puts 'bookmarked_users.size', bookmarked_users.size
     bookmarked_users
   end

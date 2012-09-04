@@ -1,9 +1,13 @@
+require_relative 'util'
+require_relative 'task'
+
+require 'kconv'
+
 require 'rubygems'
 require 'eventmachine'
 require 'em-http'
-require 'util'
 
-CONCURRENCY = 64
+CONCURRENCY = 128
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
 PAGES = 1
@@ -18,7 +22,6 @@ class Favfav
     cookie = getCookie(@proxies)
     p cookie
     @head = getRequestHeader(cookie)
-    @mysql = getMysql
     @bookmarked_users = getBookmarkedUsers(@proxies, @head)
     @faved = {}
   end
@@ -64,13 +67,12 @@ class Favfav
       p user_id
       p ids.size
       p ids
-      stmt = @mysql.prepare("INSERT INTO `task` (`illust_id`,`created_timestamp`,`tag_prefix`) values (?,NULL,'favfav')")
       ids.each do |id|
         @faved[id] = 0 unless @faved.has_key? id
         @faved[id] += 1
         if @faved[id] == FAVED_THRESHOLD
           begin
-            stmt.execute(id.to_i)
+            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 0).save
           rescue Exception => e
             p e
           end
@@ -85,7 +87,8 @@ class Favfav
     req = EM::HttpRequest.new("http://www.pixiv.net/bookmark.php?id=#{user_id}&rest=show&p=#{p}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
-      http.response =~ /class=\\?"display_works(.+)class=\\?"pages/m
+      http.response.toutf8 =~ /class=\\?"display_works(.+)class=\\?"pages/m
+
       ids = $1 ? $1.scan(/member_illust\.php\?mode=medium&illust_id=(\d+)/).map {|m| m[0]} : nil
 
       if ids and ids.size > 0

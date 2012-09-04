@@ -1,6 +1,8 @@
 require_relative 'util'
 require_relative 'task'
 
+require 'kconv'
+
 require 'rubygems'
 require 'eventmachine'
 require 'em-http'
@@ -66,7 +68,7 @@ class Favtags
     req = EM::HttpRequest.new("http://www.pixiv.net/search.php?word=#{URI.encode(word)}&s_mode=#{s_mode}&p=#{p}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
-      http.response =~ /<section(.+)<\/section>/m
+      http.response.toutf8 =~ /<section(.+)<\/section>/m
       ids = $1 ? $1.scan(/member_illust\.php\?mode=medium&amp;illust_id=(\d+)/).map {|m| m[0]} : nil
 
       if ids and ids.size > 0
