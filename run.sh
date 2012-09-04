@@ -1,1 +1,1 @@
-env MONGOID_ENV=development bundle exec ruby faxiv.rb
+env MONGOID_ENV=development bundle exec ruby $*

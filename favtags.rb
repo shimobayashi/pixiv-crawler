@@ -1,7 +1,9 @@
+require_relative 'util'
+require_relative 'task'
+
 require 'rubygems'
 require 'eventmachine'
 require 'em-http'
-require 'util'
 
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
@@ -16,7 +18,6 @@ class Favtags
     cookie = getCookie(@proxies)
     p cookie
     @head = getRequestHeader(cookie)
-    @mysql = getMysql
   end
 
   def run()
@@ -24,7 +25,7 @@ class Favtags
     EM.run do
       tags.each do |tag|
         PAGES.times do |p|
-          fetch(tag[:word], tag[:bookmark_threshold], p + 1)
+          fetch(tag['word'], tag['bookmark_threshold'], p + 1)
         end
       end
       EM.add_periodic_timer(WATCH_INTERVAL) do
@@ -48,10 +49,9 @@ class Favtags
     fetchSearch(word, bookmark_threshold, p, ttl, proxy) do |ids|
       p ids.size
       p ids
-      stmt = @mysql.prepare("INSERT INTO `task` (`illust_id`,`created_timestamp`,`tag_prefix`,`bookmark_threshold`) values (?,NULL,'favtags',?)")
       ids.each do |id|
         begin
-          stmt.execute(id.to_i, bookmark_threshold.to_i)
+          Task.new(:illust_id => id.to_i, :tag_prefix => 'favtags', :bookmark_threshold => bookmark_threshold.to_i).save
         rescue Exception => e
           p e
         end

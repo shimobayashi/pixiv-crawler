@@ -62,7 +62,7 @@ module Util
   end
 
   def getFavoriteTags()
-    nil
+    YAML.load_file('favtags.yaml')
   end
 
   def getBookmarkedUsers(proxies, head)
