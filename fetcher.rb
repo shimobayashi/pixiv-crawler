@@ -90,7 +90,9 @@ class Fetcher
       illust[:title], illust[:artist] = $1, $2
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
-      illust[:tags] = res.scan(/<a href="tags\.php\?tag=.+?">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags] = res.scan(/<a href="\/tags\.php\?tag=.+?">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags].reject! {|m| m == '{{tag_name}}'}
+      illust[:tags].uniq!
 
       if illust.has_value?(nil)
         p illust
