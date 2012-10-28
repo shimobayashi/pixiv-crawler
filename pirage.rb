@@ -41,7 +41,12 @@ class Pirage
       body.concat("--myboundary--\r\n")
       req.body = body
 
-      res = http.request(req)
+      begin
+        res = http.request(req)
+      rescue => exc
+        print exc
+        res = nil
+      end
     end
 
     return res

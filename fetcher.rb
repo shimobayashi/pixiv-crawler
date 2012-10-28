@@ -68,8 +68,10 @@ class Fetcher
             p illust[:title]
             res = @pirage.post(illust[:artist], illust[:title], illust[:url], [task.tag_prefix, *illust[:tags]], illust[:title], illust[:medium_data])
             p 'pirage', res
-            task.posted = true
-            task.save
+            if res
+              task.posted = true
+              task.save
+            end
             @fetchCount -= 1
           end
         else
