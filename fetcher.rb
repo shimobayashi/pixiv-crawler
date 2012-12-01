@@ -10,7 +10,7 @@ require 'rubygems'
 require 'eventmachine'
 require 'em-http'
 
-CONCURRENCY = 32
+CONCURRENCY = 64
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
 
