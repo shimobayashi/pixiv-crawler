@@ -65,7 +65,7 @@ class Fetcher
       fetchFromBookmarkDetail(task, ttl, proxy, illust) do
         if illust[:bookmarks] >= task.bookmark_threshold
           fetchFromMediumUrl(task, ttl, proxy, illust) do
-            p illust[:title]
+            p illust[:title], illust[:tags]
             res = @pirage.post(illust[:artist], illust[:title], illust[:url], [task.tag_prefix, *illust[:tags]], illust[:title], illust[:medium_data])
             p 'pirage', res
             if res
@@ -92,7 +92,7 @@ class Fetcher
       illust[:title], illust[:artist] = $1, $2
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
-      illust[:tags] = res.scan(/<a href="\/tags\.php\?tag=.+?">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags] = res.scan(/<a href="\/search\.php\?s_mode=s_tag_full&.+?">(.+?)<\/a>/).map {|m| m[0]}
       illust[:tags].reject! {|m| m == '{{tag_name}}'}
       illust[:tags].uniq!
 
