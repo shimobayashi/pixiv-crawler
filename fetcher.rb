@@ -101,11 +101,11 @@ class Fetcher
       illust[:tags].uniq!
 
       if illust.has_value?(nil)
+        p illust
         File::open('error/' + rand(10).to_s + '.html', 'w') do |f|
           f.write(res)
         end
         p 'maybe invalid response, maybe saved'
-        p illust
         puts 'illust has nil at title,medium_url,tags'
         fetch(task, ttl - 1)
       else
