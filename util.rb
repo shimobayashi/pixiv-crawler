@@ -21,8 +21,7 @@ module Util
     page = agent.get('http://www.cybersyndrome.net/plr5.html')
     page.search('//li/a/..').each do |li|
       proxy = li.inner_text.split(':')
-      proxy << 64 # Fucking score
-      proxies << proxy
+      proxies << {:host => proxy[0], :port => proxy[1], :score => 8}
     end
     proxies
   end
@@ -32,7 +31,8 @@ module Util
     cookie = {}
     while cookie == {}
       begin
-        proxy = proxies.slice(rand(proxies.size), 1)[0]
+        proxy = proxies[rand(proxies.size)]
+        proxy = [proxy[:host], proxy[:port]]
         p proxy
         http = Net::HTTP::Proxy(*proxy).new('www.pixiv.net', 80)
         http.open_timeout = 8

@@ -10,9 +10,9 @@ require 'rubygems'
 require 'eventmachine'
 require 'em-http'
 
-CONCURRENCY = 64
+CONCURRENCY = 512
 WATCH_INTERVAL = 10
-DEFAULT_TTL = 16
+DEFAULT_TTL = 8
 
 class Fetcher
   include Util
@@ -59,10 +59,7 @@ class Fetcher
     end
 
     proxy = @proxies[rand(@proxies.size)]
-    proxy = {:host => proxy[0], :port => proxy[1]}
-    proxy[2] -= 1
     p proxy
-    @proxies.delete!(proxy) if proxy[2] < 0
     print '.'
     illust = {}
     fetchFromMemberIllust(task, ttl, proxy, illust) do
@@ -77,16 +74,16 @@ class Fetcher
               task.save
             end
             puts 'done'
-            proxy[2] += 1
             @fetchCount -= 1
           end
         else
           puts 'not reached bookmark'
-          proxy[2] += 1
           @fetchCount -= 1
         end
       end
     end
+
+    @proxies.delete!(proxy) if proxy[:score] < 0
   end
 
   private
@@ -98,7 +95,6 @@ class Fetcher
       res = http.response.toutf8
       res =~ /「(.+)」\/「(.+)」の(イラスト|漫画) \[pixiv\]/
       illust[:title], illust[:artist] = $1, $2
-      http://i1.pixiv.net/img15/img/kolshica/33140887_m.jpg
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
       illust[:tags] = res.scan(/<a href="\/search\.php\?s_mode=s_tag_full&.+?" class="text">(.+?)<\/a>/).map {|m| m[0]}
@@ -112,7 +108,15 @@ class Fetcher
         end
         p 'maybe invalid response, maybe saved'
         puts 'illust has nil at title,medium_url,tags'
-        fetch(task, ttl - 1)
+
+        if illust.values.all? {|e| e == nil}
+          puts 'BLAME!!!!!!!!!!!!!!!!!'
+          proxy[:score] -= 1
+          fetch(task, ttl - 1)
+        else
+          puts 'it seems situation changed'
+          fetch(task, 0)
+        end
       else
         yield
       end
@@ -133,7 +137,7 @@ class Fetcher
       illust[:bookmarks] = $1.to_i
 
       if illust.has_value?(nil)
-        puts 'illust has bookmarks'
+        puts 'illust has nil bookmarks'
         fetch(task, ttl - 1)
       else
         yield
@@ -152,7 +156,7 @@ class Fetcher
     req.callback do |http|
       illust[:medium_data] = http.response.force_encoding('UTF-8')
       if illust.has_value?(nil)
-        puts 'illust has medium_data'
+        puts 'illust has nil medium_data'
         fetch(task, ttl - 1)
       else
         yield
