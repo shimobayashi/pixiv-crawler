@@ -20,7 +20,9 @@ module Util
     #end
     page = agent.get('http://www.cybersyndrome.net/plr5.html')
     page.search('//li/a/..').each do |li|
-      proxies << li.inner_text.split(':')
+      proxy = li.inner_text.split(':')
+      proxy << 64 # Fucking score
+      proxies << proxy
     end
     proxies
   end
