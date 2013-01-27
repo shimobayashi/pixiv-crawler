@@ -27,8 +27,6 @@ class Fetcher
   end
 
   def run()
-    fetch(Task.new(:illust_id => 27444448, :tag_prefix => 'test', :bookmark_threshold => 0)); return
-
     tasks = Task.not_posted
     count = 0
     EM.run do
