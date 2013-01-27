@@ -60,7 +60,9 @@ class Fetcher
 
     proxy = @proxies[rand(@proxies.size)]
     proxy = {:host => proxy[0], :port => proxy[1]}
+    proxy[2] -= 1
     p proxy
+    @proxies.delete!(proxy) if proxy[2] < 0
     print '.'
     illust = {}
     fetchFromMemberIllust(task, ttl, proxy, illust) do
@@ -75,10 +77,12 @@ class Fetcher
               task.save
             end
             puts 'done'
+            proxy[2] += 1
             @fetchCount -= 1
           end
         else
           puts 'not reached bookmark'
+          proxy[2] += 1
           @fetchCount -= 1
         end
       end
@@ -94,6 +98,7 @@ class Fetcher
       res = http.response.toutf8
       res =~ /「(.+)」\/「(.+)」の(イラスト|漫画) \[pixiv\]/
       illust[:title], illust[:artist] = $1, $2
+      http://i1.pixiv.net/img15/img/kolshica/33140887_m.jpg
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
       illust[:tags] = res.scan(/<a href="\/search\.php\?s_mode=s_tag_full&.+?" class="text">(.+?)<\/a>/).map {|m| m[0]}
