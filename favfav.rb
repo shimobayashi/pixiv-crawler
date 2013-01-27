@@ -72,7 +72,7 @@ class Favfav
         @faved[id] += 1
         if @faved[id] == FAVED_THRESHOLD
           begin
-            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 0).save
+            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 16).save
           rescue Exception => e
             p e
           end

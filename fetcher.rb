@@ -10,7 +10,7 @@ require 'rubygems'
 require 'eventmachine'
 require 'em-http'
 
-CONCURRENCY = 128
+CONCURRENCY = 64
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
 
@@ -67,11 +67,13 @@ class Fetcher
       fetchFromBookmarkDetail(task, ttl, proxy, illust) do
         if illust[:bookmarks] >= task.bookmark_threshold
           fetchFromMediumUrl(task, ttl, proxy, illust) do
-            p illust[:title]
+            p illust[:title], illust[:tags]
             res = @pirage.post(illust[:artist], illust[:title], illust[:url], [task.tag_prefix, *illust[:tags]], illust[:title], illust[:medium_data])
             p 'pirage', res
-            task.posted = true
-            task.save
+            if res
+              task.posted = true
+              task.save
+            end
             @fetchCount -= 1
           end
         else
@@ -92,7 +94,9 @@ class Fetcher
       illust[:title], illust[:artist] = $1, $2
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
-      illust[:tags] = res.scan(/<a href="\/tags\.php\?tag=.+? class="text">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags] = res.scan(/<a href="\/search\.php\?s_mode=s_tag_full&.+?" class="text">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags].reject! {|m| m == '{{tag_name}}'}
+      illust[:tags].uniq!
 
       if illust.has_value?(nil)
         p illust

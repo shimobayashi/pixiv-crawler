@@ -15,7 +15,7 @@ class Rankiv
   def run
     @targets.each do |target|
       ids = fetch(target)
-      ids.each do |id|
+      ids[0..10].each do |id|
         Task.new(:illust_id => id, :tag_prefix => 'rankiv', :bookmark_threshold => 0).save
       end
     end
