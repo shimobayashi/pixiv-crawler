@@ -27,6 +27,8 @@ class Fetcher
   end
 
   def run()
+    fetch(Task.new(:illust_id => 27444448, :tag_prefix => 'test', :bookmark_threshold => 0)); return
+
     tasks = Task.not_posted
     count = 0
     EM.run do
@@ -90,7 +92,7 @@ class Fetcher
       illust[:title], illust[:artist] = $1, $2
       res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
       illust[:medium_url], illust[:ext] = $1, $2
-      illust[:tags] = res.scan(/<a href="tags\.php\?tag=.+?">(.+?)<\/a>/).map {|m| m[0]}
+      illust[:tags] = res.scan(/<a href="\/tags\.php\?tag=.+? class="text">(.+?)<\/a>/).map {|m| m[0]}
 
       if illust.has_value?(nil)
         p illust
