@@ -32,12 +32,14 @@ class Fetcher
     EM.run do
       EM.add_periodic_timer(WATCH_INTERVAL) do
         diff = CONCURRENCY - @fetchCount
-        puts 'diff', diff
+        puts "diff:#{diff}"
 
-        tasks.skip(count).limit(diff).each do |task|
-          p task
-          fetch(task)
-          count += 1
+        if diff > 0
+          tasks.skip(count).limit(diff).each do |task|
+            p task
+            fetch(task)
+            count += 1
+          end
         end
 
         EM::stop_event_loop if Task.not_posted.count <= count and @fetchCount == 0
@@ -56,9 +58,9 @@ class Fetcher
       return
     end
 
-    proxy = @proxies.slice(rand(@proxies.size), 1)[0]
+    proxy = @proxies[rand(@proxies.size)]
     proxy = {:host => proxy[0], :port => proxy[1]}
-    #p proxy
+    p proxy
     print '.'
     illust = {}
     fetchFromMemberIllust(task, ttl, proxy, illust) do
@@ -72,9 +74,11 @@ class Fetcher
               task.posted = true
               task.save
             end
+            puts 'done'
             @fetchCount -= 1
           end
         else
+          puts 'not reached bookmark'
           @fetchCount -= 1
         end
       end
@@ -97,6 +101,10 @@ class Fetcher
       illust[:tags].uniq!
 
       if illust.has_value?(nil)
+        File::open('error/' + rand(10).to_s + '.html', 'w') do |f|
+          f.write(res)
+        end
+        p 'maybe invalid response, maybe saved'
         p illust
         puts 'illust has nil at title,medium_url,tags'
         fetch(task, ttl - 1)
