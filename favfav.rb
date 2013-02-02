@@ -61,8 +61,7 @@ class Favfav
       return
     end
 
-    proxy = @proxies.slice(rand(@proxies.size), 1)[0]
-    proxy = {:host => proxy[0], :port => proxy[1]}
+    proxy = @proxies[rand(@proxies.size)]
     fetchOthersBookmark(user_id, p, ttl, proxy) do |ids|
       p user_id
       p ids.size
