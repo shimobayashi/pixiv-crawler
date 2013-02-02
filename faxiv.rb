@@ -43,8 +43,7 @@ class Faxiv
       return
     end
 
-    proxy = @proxies.slice(rand(@proxies.size), 1)[0]
-    proxy = {:host => proxy[0], :port => proxy[1]}
+    proxy = @proxies[rand(@proxies.size)]
     fetchBookmarkNewIllust(p, ttl, proxy) do |ids|
       p ids.size
       p ids
