@@ -24,7 +24,7 @@ class Rankiv
   def fetch(url)
     while true
       begin
-        proxy = @proxies.slice(rand(@proxies.size), 1)[0]
+        proxy = @proxies[rand(@proxies.size)]
         p proxy
         http = Net::HTTP::Proxy(*proxy).new('www.pixiv.net', 80)
         http.open_timeout = 8
