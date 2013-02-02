@@ -73,7 +73,8 @@ module Util
     p = 1
     while !reachedFinish
       begin
-        proxy = proxies.slice(rand(proxies.size), 1)[0]
+        proxy = proxies[rand(proxies.size)]
+        proxy = [proxy[:host], proxy[:port]]
         p proxy
 
         while !reachedFinish
