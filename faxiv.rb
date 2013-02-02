@@ -9,7 +9,7 @@ require 'em-http'
 
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
-PAGES = 3
+PAGES = 5
 
 class Faxiv
   include Util
