@@ -9,7 +9,7 @@ require 'em-http'
 
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
-PAGES = 3
+PAGES = 5
 
 class Favtags
   include Util
@@ -46,8 +46,7 @@ class Favtags
       return
     end
 
-    proxy = @proxies.slice(rand(@proxies.size), 1)[0]
-    proxy = {:host => proxy[0], :port => proxy[1]}
+    proxy = @proxies[rand(@proxies.size)]
     fetchSearch(word, bookmark_threshold, p, ttl, proxy) do |ids|
       p ids.size
       p ids
