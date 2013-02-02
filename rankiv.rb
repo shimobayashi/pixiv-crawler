@@ -25,6 +25,7 @@ class Rankiv
     while true
       begin
         proxy = @proxies[rand(@proxies.size)]
+        proxy = [proxy[:host], proxy[:port]]
         p proxy
         http = Net::HTTP::Proxy(*proxy).new('www.pixiv.net', 80)
         http.open_timeout = 8
