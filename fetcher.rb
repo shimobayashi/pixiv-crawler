@@ -109,7 +109,7 @@ class Fetcher
         p 'maybe invalid response, maybe saved'
         puts 'illust has nil at title,medium_url,tags'
 
-        if illust.values.all? {|e| e == nil}
+        if illust.delete(:url).values.all? {|e| e == nil}
           puts 'BLAME!!!!!!!!!!!!!!!!!'
           proxy[:score] -= 1
           fetch(task, ttl - 1)
