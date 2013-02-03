@@ -15,5 +15,6 @@ class Task
   index({created_time: Mongo::DESCENDING})
 
   scope :not_posted, where(:posted => false)
+  scope :posted, where(:posted => true)
   scope :obsolete, where(:posted => true, :created_at => {'$lt' => DateTime.now - 7})
 end
