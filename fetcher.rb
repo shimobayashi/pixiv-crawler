@@ -34,6 +34,11 @@ class Fetcher
         diff = CONCURRENCY - @fetchCount
         puts "diff:#{diff}"
 
+        #task = Task.new(:illust_id => 33292478, :tag_prefix => 'test', :bookmark_threshold => 0)
+        #p task
+        #fetch(task)
+        #next
+
         if diff > 0
           tasks.skip(count).limit(diff).each do |task|
             p task
@@ -67,8 +72,10 @@ class Fetcher
         if illust[:bookmarks] >= task.bookmark_threshold
           fetchFromMediumUrl(task, ttl, proxy, illust) do
             p illust[:title], illust[:tags]
+            #p illust
             res = @pirage.post(illust[:artist], illust[:title], illust[:url], [task.tag_prefix, *illust[:tags]], illust[:title], illust[:medium_data])
             p 'pirage', res
+            #p res.body
             if res
               task.posted = true
               task.save
@@ -95,7 +102,7 @@ class Fetcher
       res = http.response.toutf8
       res =~ /「(.+)」\/「(.+)」の(イラスト|漫画) \[pixiv\]/
       illust[:title], illust[:artist] = $1, $2
-      res =~ /"(http:\/\/.+\.pixiv\.net\/img\d+\/img\/.+\/\d+_m(\..{3})(\?\d+)?)"/;
+      res =~ /src="(http:\/\/(?!www).+?\.pixiv\.net\/img\d+\/img\/.+?\/\d+_m(\..{3})(\?\d+)?)"/
       illust[:medium_url], illust[:ext] = $1, $2
       illust[:tags] = res.scan(/<a href="\/search\.php\?s_mode=s_tag_full&.+?" class="text">(.+?)<\/a>/).map {|m| m[0]}
       illust[:tags].reject! {|m| m == '{{tag_name}}'}
@@ -155,7 +162,7 @@ class Fetcher
 
     req.callback do |http|
       illust[:medium_data] = http.response.force_encoding('UTF-8')
-      if illust.has_value?(nil)
+      if illust.has_value?(nil) || illust.has_value?('')
         puts 'illust has nil medium_data'
         fetch(task, ttl - 1)
       else
