@@ -5,6 +5,7 @@ class Deleter
   include Util
 
   def run()
+    Task.nofuture.destroy
     Task.obsolete.destroy
   end
 end

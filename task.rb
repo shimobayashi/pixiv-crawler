@@ -16,5 +16,6 @@ class Task
 
   scope :not_posted, where(:posted => false)
   scope :posted, where(:posted => true)
-  scope :obsolete, where(:posted => true, :created_at => {'$lt' => DateTime.now - 3})
+  scope :nofuture, where(:posted => false, :created_at => {'$lt' => DateTime.now - 3})
+  scope :obsolete, where(:posted => true, :created_at => {'$lt' => DateTime.now - 28})
 end
