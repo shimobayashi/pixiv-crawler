@@ -88,6 +88,7 @@ module Util
             res = http.request(req)
             tmp = res.body.scan(/<input name="id\[\]" value="(\d+)"/).map {|m| m[0]}
             p tmp
+            raise Exception.new('Maybe we got fucking proxy') if tmp.size <= 0 and p == 1
             reachedFinish = true if tmp.size <= 0
             bookmarked_users += tmp
             p += 1
