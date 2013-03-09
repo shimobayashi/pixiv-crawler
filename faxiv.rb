@@ -63,7 +63,7 @@ class Faxiv
     req = EM::HttpRequest.new("http://www.pixiv.net/bookmark_new_illust.php?mode=new&p=#{p}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
-      http.response.toutf8 =~ /<section(.+)<\/section>/m
+      http.response.toutf8 =~ /<ul class="image-items(.+?)<\/ul>/m
       ids = $1 ? $1.scan(/member_illust\.php\?mode=medium&amp;illust_id=(\d+)/).map {|m| m[0]} : nil
 
       if ids and ids.size > 0
