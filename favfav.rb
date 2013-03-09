@@ -86,7 +86,7 @@ class Favfav
     req = EM::HttpRequest.new("http://www.pixiv.net/bookmark.php?id=#{user_id}&rest=show&p=#{p}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
-      http.response.toutf8 =~ /class=\\?"display_works(.+)class=\\?"pages/m
+      http.response.toutf8 =~ /<ul class="image-items(.+?)<\/ul>/m
 
       ids = $1 ? $1.scan(/member_illust\.php\?mode=medium&illust_id=(\d+)/).map {|m| m[0]} : nil
 
