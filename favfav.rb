@@ -88,7 +88,7 @@ class Favfav
     req.callback do |http|
       http.response.toutf8 =~ /<ul class="image-items(.+?)<\/ul>/m
 
-      ids = $1 ? $1.scan(/member_illust\.php\?mode=medium&illust_id=(\d+)/).map {|m| m[0]} : nil
+      ids = http.response.toutf8.scan(/member_illust\.php\?mode=medium&amp;illust_id=(\d+)/).map {|m| m[0]}
 
       if ids and ids.size > 0
         yield ids
