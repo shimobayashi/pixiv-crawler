@@ -49,7 +49,7 @@ class Faxiv
       p ids
       ids.each do |id|
         begin
-          Task.new(:illust_id => id.to_i, :tag_prefix => 'faxiv', :bookmark_threshold => 16).save
+          Task.new(:illust_id => id.to_i, :tag_prefix => 'faxiv', :bookmark_threshold => 12).save
         rescue Exception => e
           p e
         end
