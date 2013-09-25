@@ -11,7 +11,7 @@ CONCURRENCY = 128
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
 PAGES = 1
-FAVED_THRESHOLD = 3
+FAVED_THRESHOLD = 2
 
 class Favfav
   include Util
@@ -71,7 +71,7 @@ class Favfav
         @faved[id] += 1
         if @faved[id] == FAVED_THRESHOLD
           begin
-            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 8).save
+            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 3).save
           rescue Exception => e
             p e
           end
