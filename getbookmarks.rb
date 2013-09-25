@@ -9,11 +9,10 @@ require 'em-http'
 
 CONCURRENCY = 128
 WATCH_INTERVAL = 10
-DEFAULT_TTL = 16
-PAGES = 1
-FAVED_THRESHOLD = 3
+DEFAULT_TTL = 32
+PAGES = 278
 
-class Favfav
+class Getbookmarks
   include Util
 
   def initialize()
@@ -22,8 +21,8 @@ class Favfav
     cookie = getCookie(@proxies)
     p cookie
     @head = getRequestHeader(cookie)
-    @bookmarked_users = getBookmarkedUsers(@proxies, @head)
-    @faved = {}
+@pages = (1..PAGES).to_a
+@bookmarked = []
   end
 
   def run()
@@ -34,56 +33,50 @@ class Favfav
         puts 'diff', diff
 
         diff.times do
-          user_id = @bookmarked_users.slice!(0)
-          p user_id
-          unless user_id
+          page = @pages.slice!(0)
+          p page
+          unless page
             reachFinish = true
             break
           end
 
-          PAGES.times do |p|
-            fetch(user_id, p + 1)
-          end
+fetch(page)
         end
 
         EM::stop_event_loop if reachFinish and @fetchCount == 0
       end
     end
+
+p @bookmarked
+p @bookmarked.size
+open('bookmarks.marshal', 'w').write(Marshal.dump(@bookmarked))
   end
 
   private
-  def fetch(user_id, p, ttl = nil)
+  def fetch(page, ttl = nil)
     if ttl == nil
       @fetchCount += 1
       ttl = DEFAULT_TTL
     elsif ttl <= 0
+p 'fuck'
       @fetchCount -= 1
       return
     end
 
     proxy = @proxies[rand(@proxies.size)]
-    fetchOthersBookmark(user_id, p, ttl, proxy) do |ids|
-      p user_id
-      p ids.size
-      p ids
-      ids.each do |id|
-        @faved[id] = 0 unless @faved.has_key? id
-        @faved[id] += 1
-        if @faved[id] == FAVED_THRESHOLD
-          begin
-            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 8).save
-          rescue Exception => e
-            p e
-          end
-        end
-      end
-      @fetchCount -= 1
-    end
+fetchBookmark(page, ttl, proxy) do |ids|
+#p page
+#p ids.size
+#p ids
+print '.'
+@bookmarked += ids
+@fetchCount -= 1
+end
   end
 
   private
-  def fetchOthersBookmark(user_id, p, ttl, proxy)
-    req = EM::HttpRequest.new("http://www.pixiv.net/bookmark.php?id=#{user_id}&rest=show&p=#{p}", {:proxy => proxy}).get(:head => @head)
+  def fetchBookmark(page, ttl, proxy)
+    req = EM::HttpRequest.new("http://www.pixiv.net/bookmark.php?rest=show&p=#{page}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
       http.response.toutf8 =~ /<ul class="image-items(.+?)<\/ul>/m
@@ -93,15 +86,15 @@ class Favfav
       if ids and ids.size > 0
         yield ids
       else
-        fetch(user_id, p, ttl - 1)
+        fetch(page, ttl - 1)
       end
     end
 
     req.errback do
-      fetch(user_id, p, ttl -1)
+      fetch(page, ttl -1)
     end
   end
 end
 
-Favfav.new.run
+Getbookmarks.new.run
 

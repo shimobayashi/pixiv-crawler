@@ -11,9 +11,8 @@ CONCURRENCY = 128
 WATCH_INTERVAL = 10
 DEFAULT_TTL = 16
 PAGES = 1
-FAVED_THRESHOLD = 3
 
-class Favfav
+class Familiar
   include Util
 
   def initialize()
@@ -23,7 +22,8 @@ class Favfav
     p cookie
     @head = getRequestHeader(cookie)
     @bookmarked_users = getBookmarkedUsers(@proxies, @head)
-    @faved = {}
+@bookmarks = Marshal.load(open('bookmarks.marshal').read)
+@ratios = {}
   end
 
   def run()
@@ -49,6 +49,9 @@ class Favfav
         EM::stop_event_loop if reachFinish and @fetchCount == 0
       end
     end
+
+p @ratios
+open('ratios.marshal', 'w').write(Marshal.dump(@ratios))
   end
 
   private
@@ -62,28 +65,19 @@ class Favfav
     end
 
     proxy = @proxies[rand(@proxies.size)]
-    fetchOthersBookmark(user_id, p, ttl, proxy) do |ids|
-      p user_id
-      p ids.size
-      p ids
-      ids.each do |id|
-        @faved[id] = 0 unless @faved.has_key? id
-        @faved[id] += 1
-        if @faved[id] == FAVED_THRESHOLD
-          begin
-            Task.new(:illust_id => id.to_i, :tag_prefix => 'favfav', :bookmark_threshold => 8).save
-          rescue Exception => e
-            p e
-          end
-        end
-      end
-      @fetchCount -= 1
-    end
+fetchPosted(user_id, p, ttl, proxy) do |ids|
+p user_id
+p ids.size
+product = ids & @bookmarks
+p product.size
+@ratios[user_id] = product.size / ids.size.to_f
+@fetchCount -= 1
+end
   end
 
   private
-  def fetchOthersBookmark(user_id, p, ttl, proxy)
-    req = EM::HttpRequest.new("http://www.pixiv.net/bookmark.php?id=#{user_id}&rest=show&p=#{p}", {:proxy => proxy}).get(:head => @head)
+  def fetchPosted(user_id, p, ttl, proxy)
+    req = EM::HttpRequest.new("http://www.pixiv.net/member_illust.php?id=#{user_id}&p=#{p}", {:proxy => proxy}).get(:head => @head)
 
     req.callback do |http|
       http.response.toutf8 =~ /<ul class="image-items(.+?)<\/ul>/m
@@ -103,5 +97,4 @@ class Favfav
   end
 end
 
-Favfav.new.run
-
+Familiar.new.run
