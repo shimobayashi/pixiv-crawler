@@ -90,6 +90,7 @@ module Util
             p tmp
             raise Exception.new('Maybe we got fucking proxy') if tmp.size <= 0 and p == 1
             reachedFinish = true if tmp.size <= 0
+            #reachedFinish = true #FIXME
             bookmarked_users += tmp
             p += 1
           end
